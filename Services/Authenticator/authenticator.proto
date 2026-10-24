@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package authenticator;
+
+service Authenticator {
+    rpc Login(LoginRequest)
+        returns (LoginResponse);
+
+    rpc Listing(ListingRequest)
+        returns (ListingResponse);
+
+    rpc CreateUser(CreateUserRequest)
+        returns (CreateUserResponse);
+
+    rpc ActivateUser(ActivateUserRequest)
+        returns (ActivateUserResponse);
+
+    rpc DeactivateUser(DeactivateUserRequest)
+        returns (DeactivateUserResponse);
+
+    rpc ValidateToken(ValidateTokenRequest)
+        returns (ValidateTokenResponse);
+
+    rpc DeleteToken(DeleteTokenRequest)
+        returns (DeleteTokenResponse);
+}
+
+message LoginRequest {
+    string username = 1;
+    string password = 2;
+}
+
+message LoginResponse {
+    string StatusCode = 1;
+    string token = 2;
+}
+
+message ListingRequest {
+    string token = 1;
+}
+
+message ListingResponse {
+    string StatusCode = 1;
+    string list = 2;
+}
+
+message CreateUserRequest {
+    string token = 1;
+    string username = 2;
+    string role = 3;
+
+}
+
+message CreateUserResponse {
+    string StatusCode = 1;
+}
+
+message DeactivateUserRequest{
+    string token = 1;
+    string username = 2;
+
+}
+
+message DeactivateUserResponse {
+    string StatusCode = 1;
+}
+
+message ActivateUserRequest{
+    string username = 1;
+    string password = 2;
+
+}
+
+message ActivateUserResponse {
+    string StatusCode = 1;
+}
+
+message ValidateTokenRequest {
+    string token = 1;
+}
+
+message ValidateTokenResponse {
+    string StatusCode = 1;
+    string sub = 2;
+    string role = 3;
+}
+
+message DeleteTokenRequest {
+    string token = 1;
+}
+
+message DeleteTokenResponse {
+    string StatusCode = 1;
+}
+
+
+
