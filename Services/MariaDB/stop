@@ -1,0 +1,30 @@
+set -Eeuo pipefail
+
+CONTAINER_NAME="authenticator_db-container"
+
+echo "Checking Docker"
+
+if ! command -v docker >/dev/null 2>&1; then
+    echo "Error: Docker is not installed." >&2
+    exit 1
+fi
+
+if ! docker info >/dev/null 2>&1; then
+    echo "Error: Cannot connect to Docker." >&2
+    exit 1
+fi
+
+if ! docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
+    echo "Container '$CONTAINER_NAME' does not exist."
+    exit 0
+fi
+
+if [ "$(docker inspect -f '{{.State.Running}}' "$CONTAINER_NAME")" != "true" ]; then
+    echo "Container '$CONTAINER_NAME' is already stopped."
+    exit 0
+fi
+
+echo "Stopping MariaDB container"
+docker stop "$CONTAINER_NAME"
+
+echo "Container stopped successfully."

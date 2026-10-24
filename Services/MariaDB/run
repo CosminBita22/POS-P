@@ -7,37 +7,37 @@ CONTAINER_NAME="authenticator_db-container"
 VOLUME_NAME="authenticator_data"
 PORT="3306"
 
-echo "-Checking Docker"
+echo "Checking Docker..."
 
 if ! command -v docker >/dev/null 2>&1; then
-    echoB "Error: Docker is not installed."
+    echo "Error: Docker is not installed." >&2
     exit 1
 fi
 
 if ! docker info >/dev/null 2>&1; then
-    echo "Error: Cannot connect to Docker. Start Docker or check your permissions."
+    echo "Error: Cannot connect to Docker. Start Docker or check your permissions." >&2
     exit 1
 fi
 
-echo "-Building Docker image"
+echo "Building Docker image..."
 docker build -t "$IMAGE_NAME" .
 
-echo "-Creating persistent volume if needed"
+echo "Creating persistent volume if needed..."
 docker volume create "$VOLUME_NAME" >/dev/null
 
-echo "-Removing existing container if present"
+echo "Removing existing container if present..."
 if docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
     docker rm -f "$CONTAINER_NAME" >/dev/null
 fi
 
-echo "-Starting MariaDB container"
-docker run -d 
-    --name "$CONTAINER_NAME" 
-    --restart unless-stopped 
-    -p "$PORT":"$PORT"
-    -e MARIADB_ROOT_PASSWORD=secret_password 
-    -e MARIADB_DATABASE=authenticator_db 
-    -v "$VOLUME_NAME":/var/lib/mysql 
+echo "Starting MariaDB container..."
+docker run -d \
+    --name "$CONTAINER_NAME" \
+    --restart unless-stopped \
+    -p "$PORT:$PORT" \
+    -e MARIADB_ROOT_PASSWORD=secret_password \
+    -e MARIADB_DATABASE=authenticator_db \
+    -v "$VOLUME_NAME:/var/lib/mysql" \
     "$IMAGE_NAME"
 
 echo
@@ -48,3 +48,4 @@ echo "Port:      $PORT"
 echo
 echo "Check status: docker ps"
 echo "View logs:    docker logs -f $CONTAINER_NAME"
+
