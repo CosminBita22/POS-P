@@ -1,4 +1,5 @@
-import hashlib
+from uuid import UUID
+
 from uuid_extensions import uuid7
 from datetime import datetime, timedelta, timezone
 from enum import Enum
@@ -49,7 +50,7 @@ class User(BaseModel):
 
 
 class TokenBlacklist(BaseModel):
-    token_hash = CharField(max_length=64, primary_key=True)
+    token_uuid = CharField(max_length=64, primary_key=True)
     date_added = DateTimeField(default=utcnow)
     expires_at = DateTimeField(index=True)
 
@@ -66,17 +67,29 @@ class DBConnection:
     def GetUser(self, username):
         return User.get_or_none(User.username == username)
 
+    def GetUserByUid(self, uid):
+        try:
+            uid = UUID(str(uid))
+        except (ValueError, TypeError, AttributeError):
+            return None
+
+        return User.get_or_none(User.uid == uid)
+
     def GetUsers(self):
         return list(User.select().order_by(User.username))
 
     def CreateUser(self, username, role=Role.MAINTAINER):
         if self.GetUser(username) is not None:
             return None
+
+        if not isinstance(role, Role):
+            role = Role(role)
+
         return User.create(
             uid=uuid7(),
             username=username,
             password=None,
-            role=Role(role),
+            role=role.value,
             is_active=False,
         )
 
@@ -90,33 +103,36 @@ class DBConnection:
 
     def DeactivateUser(self, username):
         updated = (
-            User.update(password=None, is_active=False)
+            User.update(is_active=False)
             .where(User.username == username)
             .execute()
         )
         return updated > 0
 
-    @staticmethod
-    def _hash_token(token):
-        return hashlib.sha256(token.encode("utf-8")).hexdigest()
 
     def _delete_expired(self):
         TokenBlacklist.delete().where(TokenBlacklist.expires_at <= utcnow()).execute()
 
-    def AddTokenBlacklist(self, token):
+    def AddTokenBlacklist(self, token_uuid, expires_at=None):
         self._delete_expired()
-        expires_at = utcnow() + DEFAULT_TOKEN_TTL
+
+        if expires_at is None:
+            expires_at = utcnow() + DEFAULT_TOKEN_TTL
+
+        if expires_at.tzinfo is not None:
+            expires_at = expires_at.astimezone(timezone.utc).replace(tzinfo=None)
+
         TokenBlacklist.insert(
-            token_hash=self._hash_token(token),
+            token_uuid=str(token_uuid),
             date_added=utcnow(),
             expires_at=expires_at,
         ).on_conflict_ignore().execute()
 
-    def IsTokenBlacklisted(self, token):
+    def IsTokenBlacklisted(self, token_uuid):
         return (
             TokenBlacklist.select()
             .where(
-                TokenBlacklist.token_hash == self._hash_token(token),
+                TokenBlacklist.token_uuid == token_uuid,
                 TokenBlacklist.expires_at > utcnow(),
             )
             .exists()
