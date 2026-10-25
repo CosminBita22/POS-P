@@ -1,9 +1,12 @@
 import hashlib
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
 
 
 class Authenticator:
     def __init__(self, DBConnection):
         self.DBConnection = DBConnection
+        self._ph = PasswordHasher()
 
     def _Hash(self, password):
         return hashlib.md5(password.encode()).hexdigest()
@@ -35,6 +38,15 @@ class Authenticator:
         pass
     def _RemoveUser(self, username):
         pass
+    def _CheckPassword(self, username, password):
+        user = self.GetUser(username)
+        if user is None or not user.is_active or not user.password:
+            return False
+        try:
+            return self._ph.verify(user.password, password)
+        except VerifyMismatchError:
+            return False
+
     def Login(self, loginRequest):
         pass
     def ListingUsers(self, ListingRequest):

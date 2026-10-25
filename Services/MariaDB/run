@@ -7,7 +7,7 @@ CONTAINER_NAME="authenticator_db-container"
 VOLUME_NAME="authenticator_data"
 PORT="3306"
 
-echo "Checking Docker..."
+echo "Checking Docker"
 
 if ! command -v docker >/dev/null 2>&1; then
     echo "Error: Docker is not installed." >&2
@@ -19,18 +19,18 @@ if ! docker info >/dev/null 2>&1; then
     exit 1
 fi
 
-echo "Building Docker image..."
+echo "Building Docker image"
 docker build -t "$IMAGE_NAME" .
 
-echo "Creating persistent volume if needed..."
+echo "Creating persistent volume if needed"
 docker volume create "$VOLUME_NAME" >/dev/null
 
-echo "Removing existing container if present..."
+echo "Removing existing container if present"
 if docker container inspect "$CONTAINER_NAME" >/dev/null 2>&1; then
     docker rm -f "$CONTAINER_NAME" >/dev/null
 fi
 
-echo "Starting MariaDB container..."
+echo "Starting MariaDB container"
 docker run -d \
     --name "$CONTAINER_NAME" \
     --restart unless-stopped \
@@ -41,7 +41,7 @@ docker run -d \
     "$IMAGE_NAME"
 
 echo
-echo "==> Container started!"
+echo "Container started"
 echo "Container: $CONTAINER_NAME"
 echo "Database:  authenticator_db"
 echo "Port:      $PORT"
