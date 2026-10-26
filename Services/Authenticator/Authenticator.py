@@ -36,6 +36,9 @@ class Authenticator:
         self._secret = "secret-key"
         self._issuer = issuer
 
+        self._AddUser("Admin", "administrator")
+        self._ActivateUser("Admin","password")
+
     def _DecodeToken(self, token):
         try:
             claims = jwt.decode(
@@ -194,7 +197,7 @@ class Authenticator:
             token=token,
         )
 
-    def ListingUsers(self, listingRequest):
+    def Listing(self, listingRequest):
         claims = self._ValidateToken(listingRequest.token)
 
         if claims is None:
@@ -250,7 +253,7 @@ class Authenticator:
         if not self._IsUserExists(activateUserRequest.username):
             return ActivateUserResponse(StatusCode="NOT_FOUND")
 
-        user = self.DBConnection.GetUser(self, activateUserRequest.username)
+        user = self.DBConnection.GetUser(activateUserRequest.username)
 
         if self._IsUserActivated(user):
             return LoginResponse(StatusCode="PERMISSION_DENIED")
@@ -305,7 +308,7 @@ class Authenticator:
         if claims is None:
             return DeleteTokenResponse(StatusCode="UNAUTHENTICATED")
 
-        success = self._BlacklistToken(deleteTokenRequest.token)
+        success = self._BlacklistToken(claims)
 
         if success:
             return DeleteTokenResponse(StatusCode="OK")

@@ -22,9 +22,9 @@ class AuthenticatorServicer(authenticator_pb2_grpc.AuthenticatorServicer):
         logger.info("Login request received")
         return self.auth.Login(request)
 
-    def ListingUsers(self, request, context):
+    def Listing(self, request, context):
         logger.info("ListingUsers request received")
-        return self.auth.ListingUsers(request)
+        return self.auth.Listing(request)
 
     def CreateUser(self, request, context):
         logger.info("CreateUser request received")
@@ -42,7 +42,7 @@ class AuthenticatorServicer(authenticator_pb2_grpc.AuthenticatorServicer):
         logger.info("ValidateToken request received")
         return self.auth.ValidateToken(request)
 
-    def BlacklistToken(self, request, context):
+    def DeleteToken(self, request, context):
         logger.info("BlacklistToken request received")
         return self.auth.BlacklistToken(request)
 
