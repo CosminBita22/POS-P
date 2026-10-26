@@ -29,12 +29,12 @@ from DBConnection import Role
 class Authenticator:
     ALGORITHM = "HS256"
 
-    def __init__(self, db_connection):
+    def __init__(self, db_connection, issuer="http://localhost:50051"):
         self.DBConnection = db_connection
         self._ph = PasswordHasher()
 
-        self._secret = os.environ["JWT_SECRET_KEY"]
-        self._issuer = os.environ["JWT_ISSUER"]
+        self._secret = "secret-key"
+        self._issuer = issuer
 
     def _DecodeToken(self, token):
         try:
